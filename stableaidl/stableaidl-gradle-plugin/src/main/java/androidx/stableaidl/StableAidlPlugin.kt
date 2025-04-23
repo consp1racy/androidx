@@ -18,6 +18,7 @@ package androidx.stableaidl
 
 import androidx.stableaidl.api.StableAidlExtension
 import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.DslExtension
@@ -55,13 +56,14 @@ abstract class StableAidlPlugin : Plugin<Project> {
     // Suppress UnstableApiUsage for SdkComponents.getAidl(), Aidl, and DSL extension methods
     @Suppress("UnstableApiUsage")
     private fun applyAfterAgp(project: Project) {
+        val android = project.extensions.getByType(CommonExtension::class.java)
         val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
         val extension =
             project.extensions.create(EXTENSION_NAME, StableAidlExtensionImpl::class.java)
 
         // Tests using `ProjectSetupRule` don't populate `compileSdk`, so we use a CLI property.
         val compileSdk =
-            project.extensions.getByType(CommonExtension::class.java).compileSdk
+            android.compileSdk
                 ?: project.providers.gradleProperty("stableaidl.compilesdk").orNull?.toInt()
                 ?: throw RuntimeException("Failed to obtain compile SDK")
 
@@ -101,6 +103,7 @@ abstract class StableAidlPlugin : Plugin<Project> {
             val outputDir = project.layout.buildDirectory.dir("$GENERATED_PATH/${variant.name}")
             val packagedDir =
                 project.layout.buildDirectory.dir("$INTERMEDIATES_PATH/${variant.name}/out")
+            val packagedList = (android as? LibraryExtension)?.aidlPackagedList
 
             val apiDirName = "$API_DIR/aidl${variant.name.usLocaleCapitalize()}"
             val builtApiDir = project.layout.buildDirectory.dir(apiDirName)
@@ -116,6 +119,7 @@ abstract class StableAidlPlugin : Plugin<Project> {
                     aidlVersion,
                     sourceDir,
                     packagedDir,
+                    packagedList,
                     importsDir,
                     depImports,
                     outputDir
