@@ -70,6 +70,7 @@ abstract class StableAidlCompile : DefaultTask() {
     abstract val sourceDirs: ListProperty<Directory>
 
     /** List of directories containing AIDL sources available as imports. */
+    @get:Optional
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val importDirs: ListProperty<Directory>
@@ -131,7 +132,7 @@ abstract class StableAidlCompile : DefaultTask() {
             FileUtils.cleanOutputDir(parcelableDir.asFile)
         }
 
-        val fullImportList = sourceDirs.get() + importDirs.get()
+        val fullImportList = sourceDirs.get() + importDirs.getOrElse(emptyList())
         val sourceDirsAsFiles = sourceDirs.get().map { it.asFile }
 
         // When using AIDL from build tools version 33 and later, pass the variant's minimum SDK
