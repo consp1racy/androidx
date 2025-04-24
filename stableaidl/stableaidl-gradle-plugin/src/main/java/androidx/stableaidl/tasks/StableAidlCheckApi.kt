@@ -54,6 +54,7 @@ abstract class StableAidlCheckApi : DefaultTask() {
     @get:Internal abstract var variantName: String
 
     /** List of directories containing AIDL sources available as imports. */
+    @get:Optional
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val importDirs: ListProperty<Directory>
@@ -117,7 +118,7 @@ abstract class StableAidlCheckApi : DefaultTask() {
             aidlExecutable.get().asFile,
             aidlFrameworkProvider.orNull?.asFile,
             extraArgs,
-            importDirs.get(),
+            importDirs.getOrElse(emptyList()),
             dependencyImportDirs.get().map { it.asFile }
         )
     }
